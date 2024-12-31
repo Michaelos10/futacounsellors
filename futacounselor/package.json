@@ -1,0 +1,16 @@
+{
+  "name": "futacounselor",
+  "version": "1.0.0",
+  "description": "flutter web app for futa counselor",
+  "main": "index.js",
+  "directories": {
+    "lib": "lib",
+    "test": "test"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}
