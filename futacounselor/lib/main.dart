@@ -18,7 +18,7 @@ import 'firebase_options.dart'; // For DefaultFirebaseOptions
 import 'counselor_login_page.dart';
 import 'incoming_call.dart';
 
-void main() async {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
@@ -37,10 +37,77 @@ class _MyAppState extends State<MyApp> {
   @override
   void initState() {
     super.initState();
-    _setupUserPresence();
-    // IncomingCallDialogHandler(peerId: 'iPgAMiSFKxXjU1fw7IktfBiKzrf2');
+    monitorAuthenticationAndListenToIsCalled();
   }
-//sj
+
+  void monitorAuthenticationAndListenToIsCalled() {
+    _auth.authStateChanges().listen((User? user) {
+      if (user != null) {
+        print('User signed in: ${user.uid}');
+        listenToIsCalled(user.uid);
+      } else {
+        print('User signed out.');
+      }
+    });
+  }
+
+  void listenToIsCalled(String userId) {
+    FirebaseFirestore.instance
+        .collection('users')
+        .doc(userId)
+        .snapshots()
+        .listen((snapshot) {
+      if (snapshot.exists) {
+        final data = snapshot.data() as Map<String, dynamic>?;
+        bool? isCalled = data?['isCalled'] as bool?;
+        if (isCalled == true) {
+          _showAcceptRejectDialog(context);
+        }
+      }
+    });
+  }
+
+  void _showAcceptRejectDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Incoming Call'),
+          content: Text('Do you want to accept or reject this call?'),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                print('Accepted!');
+              },
+              child: Row(
+                children: [
+                  Icon(Icons.check, color: Colors.green),
+                  SizedBox(width: 4),
+                  Text('Accept'),
+                ],
+              ),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                print('Rejected!');
+              },
+              child: Row(
+                children: [
+                  Icon(Icons.close, color: Colors.red),
+                  SizedBox(width: 4),
+                  Text('Reject'),
+                ],
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   /// Tracks user presence based on authentication state and browser events
   void _setupUserPresence() {
     // Listen for authentication state changes

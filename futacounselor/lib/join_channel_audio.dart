@@ -3,7 +3,6 @@ import 'config/agora.config.dart' as config;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
-
 import 'components/log_sink.dart';
 import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -103,7 +102,7 @@ class _State extends State<JoinChannelAudio> {
         _engine.playEffect(
           soundId: 2,
           filePath: 'assets/sounds/callTone.mp3',
-          loopCount: -1, // Loop indefinitely
+          loopCount: 2, // Loop indefinitely
           pitch: 1.0,
           pan: 0.0,
           gain: 100,
@@ -111,8 +110,8 @@ class _State extends State<JoinChannelAudio> {
         );
 
         // Start the 40-second timer
-        _ringingTimer = Timer(const Duration(seconds: 40), () async {
-          print("No user joined within 40 seconds. Ending the call...");
+        _ringingTimer = Timer(const Duration(seconds: 20), () async {
+          print("No user joined within 20 seconds. Ending the call...");
 
           // Stop the ringtone
           _engine.stopEffect(2);
@@ -259,7 +258,7 @@ class _State extends State<JoinChannelAudio> {
   }
 
   void _toggleMicrophone() async {
-    await _engine.muteLocalAudioStream(!openMicrophone);
+    await _engine.muteLocalAudioStream(openMicrophone);
     setState(() {
       openMicrophone = !openMicrophone;
     });
@@ -348,18 +347,8 @@ class _State extends State<JoinChannelAudio> {
                     color: Colors.white,
                     size: 30,
                   ),
-                  onPressed: _muteLocalAudioStream,
+                  onPressed: _toggleMicrophone,
                 ),
-                // Speaker/Phone Button
-                IconButton(
-                  icon: Icon(
-                    enableSpeakerphone ? Icons.volume_up : Icons.phone_in_talk,
-                    color: Colors.white,
-                    size: 30,
-                  ),
-                  onPressed: _toggleSpeakerphone,
-                ),
-                // End Call Button
                 IconButton(
                   icon: const Icon(
                     Icons.call_end,
