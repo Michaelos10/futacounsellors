@@ -8,7 +8,7 @@ import 'counselor_login_page.dart';
 import 'dart:html'; // For browser-specific events
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-
+import 'join_channel_audio.dart';
 import 'dart:html'; // For browser-specific events
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -33,6 +33,7 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
+  final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
   @override
   void initState() {
@@ -61,7 +62,13 @@ class _MyAppState extends State<MyApp> {
         final data = snapshot.data() as Map<String, dynamic>?;
         bool? isCalled = data?['isCalled'] as bool?;
         if (isCalled == true) {
-          _showAcceptRejectDialog(context);
+          // Use the global navigator key
+          navigatorKey.currentState?.push(
+            MaterialPageRoute(
+              builder: (context) => JoinChannelAudio(
+                  chatId: "chatId", peerName: "peerName", Id: "peerId"),
+            ),
+          );
         }
       }
     });
@@ -147,6 +154,7 @@ class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      navigatorKey: navigatorKey,
       title: 'FUTA Counsellor',
       theme: ThemeData(
         primarySwatch: Colors.blue,
