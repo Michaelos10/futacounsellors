@@ -11,13 +11,17 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 class JoinChannelAudio extends StatefulWidget {
   final String chatId;
   final String peerName;
+  final String userName;
   final String Id;
+  final String userId;
 
   const JoinChannelAudio(
       {Key? key,
       required this.chatId,
       required this.peerName,
-      required this.Id})
+      required this.Id,
+      required this.userName,
+      required this.userId})
       : super(key: key); // Constructor requires chatId.
 
   @override
@@ -91,11 +95,17 @@ class _State extends State<JoinChannelAudio> {
           await FirebaseFirestore.instance
               .collection('names')
               .doc(widget.Id)
-              .update({'isCalled': true});
-          print("isCalled set to true for peerId: ${widget.Id}");
+              .update({
+            'isCalled': true,
+            'callerName': widget
+                .userName, // Assuming widget.userName is the caller's name
+            'callerId': widget.userId, // Assuming userId is the caller's ID
+          });
+          print(
+              "isCalled set to true and caller information updated for peerId: ${widget.Id}");
         } catch (e) {
           print(
-              "Failed to update isCalled for peerId: ${widget.Id}, Error: $e");
+              "Failed to update isCalled or caller information for peerId: ${widget.Id}, Error: $e");
         }
 
         // Start the ringing sound

@@ -38,6 +38,7 @@ class _MyAppState extends State<MyApp> {
   @override
   void initState() {
     super.initState();
+    _setupUserPresence();
     monitorAuthenticationAndListenToIsCalled();
   }
 
@@ -53,6 +54,8 @@ class _MyAppState extends State<MyApp> {
   }
 
   void listenToIsCalled(String userId) {
+    bool? previousIsCalled; // Tracks the previous state of `isCalled`
+
     FirebaseFirestore.instance
         .collection('users')
         .doc(userId)
@@ -60,59 +63,32 @@ class _MyAppState extends State<MyApp> {
         .listen((snapshot) {
       if (snapshot.exists) {
         final data = snapshot.data() as Map<String, dynamic>?;
-        bool? isCalled = data?['isCalled'] as bool?;
-        if (isCalled == true) {
-          // Use the global navigator key
+        bool? currentIsCalled = data?['isCalled'] as bool?;
+        String callerName = data?['callerName'] ?? "Unknown Caller";
+        String callerId = data?['callerId'] ?? "Unknown ID";
+
+        if (currentIsCalled == true && previousIsCalled != true) {
+          // If `isCalled` changes to true, navigate to the call notification page
+
           navigatorKey.currentState?.push(
             MaterialPageRoute(
-              builder: (context) => JoinChannelAudio(
-                  chatId: "chatId", peerName: "peerName", Id: "peerId"),
+              builder: (context) => CallNotificationPage(
+                callerName: callerName,
+                callerId: callerId,
+              ),
             ),
           );
+        } else if (currentIsCalled == false && previousIsCalled == true) {
+          // If `isCalled` changes to false, go back
+          if (navigatorKey.currentState?.canPop() ?? false) {
+            navigatorKey.currentState?.pop(); // Go back
+          }
         }
+
+        // Update the previous state
+        previousIsCalled = currentIsCalled;
       }
     });
-  }
-
-  void _showAcceptRejectDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('Incoming Call'),
-          content: Text('Do you want to accept or reject this call?'),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-                print('Accepted!');
-              },
-              child: Row(
-                children: [
-                  Icon(Icons.check, color: Colors.green),
-                  SizedBox(width: 4),
-                  Text('Accept'),
-                ],
-              ),
-            ),
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-                print('Rejected!');
-              },
-              child: Row(
-                children: [
-                  Icon(Icons.close, color: Colors.red),
-                  SizedBox(width: 4),
-                  Text('Reject'),
-                ],
-              ),
-            ),
-          ],
-        );
-      },
-    );
   }
 
   /// Tracks user presence based on authentication state and browser events
@@ -164,6 +140,8 @@ class _MyAppState extends State<MyApp> {
     );
   }
 }
+
+// import 'package:flutter/material.dart';
 
 /*
 // CHALLENGES TO SOLVE

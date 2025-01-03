@@ -49,6 +49,7 @@ dependencies:
   permission_handler: ^8.3.0
   path_provider: ^2.0.8
   js: ^0.6.3
+  audioplayers: ^6.1.0
 
 dev_dependencies:
   flutter_test:
@@ -83,6 +84,7 @@ flutter:
     - assets/jpg.jpg
     - assets/sounds/ding.mp3
     - assets/sounds/callTone.mp3
+    - assets/sounds/ringtone.mp3
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

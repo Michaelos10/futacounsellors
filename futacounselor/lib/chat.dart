@@ -6,6 +6,8 @@ import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'join_channel_audio.dart';
 //import 'package:agora_rtc_engine/agora_rtc_engine.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/material.dart';
 
 class ChatScreen extends StatelessWidget {
   final String userId;
@@ -40,38 +42,58 @@ class ChatScreen extends StatelessWidget {
     _controller.clear();
   }
 
-  void _showPhoneDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('Call'),
-          content: Text('Calling in for your session?'),
-          actions: <Widget>[
-            TextButton(
-              child: Text('Cancel'),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-            ),
-            TextButton(
-              child: Text('Call'),
-              onPressed: () {
-                // String _chatId = widget
-                //     .chatId; // Navigate to the VoiceCallDialog screen using Navigator.push
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (context) => JoinChannelAudio(
-                        chatId: chatId, peerName: peerName, Id: peerId),
-                  ),
-                );
-                print('Navigating to VoiceCallDialog...');
-              },
-            ),
-          ],
+  void _showPhoneDialog(BuildContext context) async {
+    try {
+      // Fetch counselor's name using peerId from users collection
+      DocumentSnapshot snapshot = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(userId)
+          .get();
+
+      if (snapshot.exists) {
+        String counselorName = snapshot['counselorName'] ?? 'Unknown';
+
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: Text('Call'),
+              content: Text('Call $peerName for their session?'),
+              actions: <Widget>[
+                TextButton(
+                  child: Text('Cancel'),
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                ),
+                TextButton(
+                  child: Text('Call'),
+                  onPressed: () {
+                    Navigator.of(context).pop(); // Close the dialog
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (context) => JoinChannelAudio(
+                          chatId: chatId,
+                          userName: counselorName,
+                          peerName: peerName,
+                          Id: peerId,
+                          userId: userId,
+                        ),
+                      ),
+                    );
+                    print('Navigating to JoinChannelAudio...');
+                  },
+                ),
+              ],
+            );
+          },
         );
-      },
-    );
+      } else {
+        print('Counselor not found.');
+      }
+    } catch (e) {
+      print('Error fetching counselor: $e');
+    }
   }
 
   @override
